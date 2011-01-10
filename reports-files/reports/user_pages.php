@@ -1,89 +1,59 @@
 <?php
-/*
-Plugin Name: Report - User Pages
-Plugin URI: 
-Description:
-Author: Andrew Billits
-Version: 1.0.1
-Author URI:
-*/
 
-/* 
-Copyright 2007-2009 Incsub (http://incsub.com)
+$activity_reports->add_report( __( 'User Pages', 'reports' ), 'user-pages', __( 'Displays page activity for a user', 'reports' ) );
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License (Version 2 - GPLv2) as published by
-the Free Software Foundation.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
-//------------------------------------------------------------------------//
-//---Hook-----------------------------------------------------------------//
-//------------------------------------------------------------------------//
-
-reports_add_report('User Pages','user-pages','Displays page activity for a user');
-
-if ( $_GET['report'] == 'user-pages' ) {
-	add_action('view_report','report_user_pages_ouput');
-}
-
-//------------------------------------------------------------------------//
-//---Outpur Functions-----------------------------------------------------//
-//------------------------------------------------------------------------//
+if ( isset( $_GET['report'] ) && 'user-pages' == $_GET['report'] )
+	add_action( 'view_report','report_user_pages_ouput' );
 
 function report_user_pages_ouput(){
 	global $wpdb, $current_site;
-	switch( $_GET[ 'report-action' ] ) {
+
+	$action = isset( $_GET[ 'report-action' ] ) ? $_GET[ 'report-action' ] : '';
+	switch( $action ) {
 		//---------------------------------------------------//
 		default:
 			?>
-			<form name="report" method="POST" action="ms-admin.php?page=reports&action=view-report&report=user-pages&report-action=view">
+			<form name="report" method="POST" action="?page=reports&action=view-report&report=user-pages&report-action=view">
 				<table class="form-table">
-				<tr valign="top">
-				<th scope="row"><?php _e('Username') ?></th>
-				<td><input type="text" name="user_login" id="user_login" style="width: 95%" tabindex='1' maxlength="200" value="" />
-				<br />
-				<?php _e('Case Sensative') ?></td> 
-				</tr>
-				<tr valign="top">
-				<th scope="row"><?php _e('Period') ?></th>
-				<td>
-				<select name="period" id="period">
-					<option value="15" ><?php _e('15 Days'); ?></option>
-					<option value="30" ><?php _e('30 Days'); ?></option>
-					<option value="45" ><?php _e('45 Days'); ?></option>
-				</select>
-				<br /><?php //_e('') ?></td>
-				</tr>
+					<tr valign="top">
+						<th scope="row"><?php _e( 'Username', 'reports' ) ?></th>
+						<td>
+							<input type="text" name="user_login" id="user_login" style="width: 95%" tabindex='1' maxlength="200" value="" />
+							<br />
+							<?php _e( 'Case Sensitive', 'reports' ) ?>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row"><?php _e( 'Period', 'reports' ) ?></th>
+						<td>
+							<select name="period" id="period">
+								<option value="15" ><?php _e( '15 Days', 'reports' ); ?></option>
+								<option value="30" ><?php _e( '30 Days', 'reports' ); ?></option>
+								<option value="45" ><?php _e( '45 Days', 'reports' ); ?></option>
+							</select>
+						</td>
+					</tr>
 				</table>
-			<p class="submit">
-			<input type="submit" name="Submit" value="<?php _e('View') ?>" />
-			</p>
+				<p class="submit">
+					<input type="submit" name="Submit" value="<?php _e( 'View', 'reports' ) ?>" />
+				</p>
 			</form>
 			<?php
 		break;
 		//---------------------------------------------------//
-		case "view":
-			$user_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "users WHERE user_login = '" . $_POST['user_login'] . "'");
-			if ( $user_count == '0' ) {
+		case 'view':
+			$user = get_userdatabylogin( $_POST['user_login'] );
+			if ( ! $user ) {
 				?>
-                <p><?php _e('User not found.'); ?></p>
+                <p><?php _e( 'User not found.', 'reports' ); ?></p>
                 <?php
 			} else {
-				$user_ID = $wpdb->get_var("SELECT ID FROM " . $wpdb->base_prefix . "users WHERE user_login = '" . $_POST['user_login'] . "'");
+				$user_ID = $user->ID;
 				?>
                 <p>
                     <ul>
-                        <li><strong><?php _e('Username'); ?></strong>: <?php echo $_POST['user_login']; ?></li>
-                        <li><strong><?php _e('Period'); ?></strong>: <?php echo __($_POST['period'] . ' ' . 'Days'); ?></li>
+                        <li><strong><?php _e( 'Username', 'reports' ); ?></strong>: <?php echo $_POST['user_login']; ?></li>
+                        <li><strong><?php _e( 'Period', 'reports' ); ?></strong>: <?php printf( __( '%d Days', 'reports' ), $_POST['period'] ); ?></li>
                     </ul>
                 </p>
                 <?php
@@ -112,10 +82,9 @@ function report_user_pages_ouput(){
 					$report_data[] = array($label,$value);
 					$days = $days + 1;
 				}
-				
+
 				$report_data = array_reverse($report_data);
-				//=======================================//
-				include_once(ABSPATH . 'wp-content/report-graphs/open-flash-chart/open-flash-chart.php');
+
 				$count = 0;
 				$array_labels = array();
 				$array_values = array();
@@ -141,7 +110,7 @@ function report_user_pages_ouput(){
 				//---Data-----------------------//
 				//------------------------------//
 				$g->set_data( $array_values );
-				
+
 				//------------------------------//
 				//---X--------------------------//
 				//------------------------------//
@@ -154,33 +123,33 @@ function report_user_pages_ouput(){
 				//------------------------------//
 				$g->set_num_decimals ( 0 );
 				$g->set_is_decimal_separator_comma( false );
-				$g->set_is_thousand_separator_disabled( true );  
+				$g->set_is_thousand_separator_disabled( true );
 				$g->y_axis_colour = '#ffffff';
-				$g->x_axis_colour = '#596171'; 
+				$g->x_axis_colour = '#596171';
 				$g->x_grid_colour = $g->y_grid_colour = '#E0E1E4';
-				
+
 				// approx 5 x labels on the graph
 				$steps = ceil($label_count / 5);
 				$steps = $steps + $steps % 2; // make sure modulo 2
-				
+
 				$g->set_x_label_style( 10, $g->x_axis_colour, 0, $steps, $g->x_grid_colour );
 				$g->set_x_axis_steps( $steps / 2 );
-				
-				
+
+
 				$stepsY = ceil($highest_value / 4);
 				$g->y_label_steps( $stepsY / 3 );
 				$g->y_label_steps( 4 );
-				
+
 				$g->bg_colour = '#ffffff';
 				$g->set_inner_background('#ffffff');
-				$g->area_hollow(1,3,4,'#3357A0', __('page(s)'),10);
-				
+				$g->area_hollow( 1, 3, 4, '#3357A0', __( 'page(s)', 'reports' ), 10 );
+
 				$g->set_tool_tip( '#x_label# <br>#val# #key# ' );
 				//------------------------------//
 				$g->set_width( '100%' );
 				$g->set_height( 250 );
-				$g->set_js_path ( 'http://' . $current_site->domain . $current_site->path . 'wp-content/report-graphs/open-flash-chart/js/' );
-				$g->set_swf_path ( 'http://' . $current_site->domain . $current_site->path . 'wp-content/report-graphs/open-flash-chart/' );
+				$g->set_js_path ( REPORTS_PLUGIN_URL . 'report-graphs/open-flash-chart/js/' );
+				$g->set_swf_path ( REPORTS_PLUGIN_URL . 'report-graphs/open-flash-chart/' );
 				$g->set_output_type('js');
 				echo $g->render();
 				//=======================================//
@@ -189,5 +158,3 @@ function report_user_pages_ouput(){
 		//---------------------------------------------------//
 	}
 }
-
-?>
