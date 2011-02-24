@@ -15,10 +15,14 @@ function report_blog_pages_ouput(){
 			?>
 			<form name="report" method="POST" action="?page=reports&action=view-report&report=blog-pages&report-action=view">
 				<table class="form-table">
+					<?php if ( is_multisite() ) { ?>
 					<tr valign="top">
 						<th scope="row"><?php _e( 'Blog ID', 'reports' ) ?></th>
 						<td><input type="text" name="blog_ID" id="blog_ID" style="width: 95%" tabindex='1' maxlength="200" value="" /></td>
 					</tr>
+					<?php } else { ?>
+						<input type="hidden" name="blog_ID" id="blog_ID" value="0" />
+					<?php } ?>
 					<tr valign="top">
 						<th scope="row"><?php _e( 'Period', 'reports' ) ?></th>
 						<td>
@@ -38,16 +42,17 @@ function report_blog_pages_ouput(){
 		break;
 		//---------------------------------------------------//
 		case 'view':
-			$blog = get_blog_details( (int) $_POST['blog_ID'], false );
+			$blog = is_multisite() ? get_blog_details( (int) $_POST['blog_ID'], false ) : true;
 			if ( ! $blog ) {
 				?>
                 <p><?php _e( 'Blog not found.', 'reports' ); ?></p>
                 <?php
-			} else {
+			}
+			if ( $blog ) {
 				?>
                 <p>
                     <ul>
-                        <li><strong><?php _e( 'Blog', 'reports' ); ?></strong>: <?php echo $_POST['blog_ID']; ?> (<?php echo get_blogaddress_by_id( $_POST['blog_ID'] ); ?>)</li>
+                        <li><strong><?php _e( 'Blog', 'reports' ); ?></strong>: <?php echo $_POST['blog_ID']; ?> (<?php echo get_site_url( $_POST['blog_ID'] ); ?>)</li>
                         <li><strong><?php _e( 'Period', 'reports' ); ?></strong>: <?php printf( __( '%d Days', 'reports' ), $_POST['period'] ); ?></li>
                     </ul>
                 </p>

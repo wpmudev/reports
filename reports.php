@@ -4,7 +4,7 @@ Plugin Name: Reports
 Plugin URI: http://premium.wpmudev.org/project/reports
 Description: Displays post and comment activity per blog and per user
 Author: Andrew Billits, Ulrich Sossou (Incsub)
-Version: 1.0.4
+Version: 1.0.5
 Network: true
 Author URI: http://premium.wpmudev.org/
 WDP ID: 47
@@ -41,7 +41,7 @@ class Activity_Reports {
 	/**
 	 * Current version of the plugin
 	 **/
-	var $version = '1.0.4';
+	var $version = '1.0.5';
 
 	/**
 	 * Available reports
@@ -64,8 +64,10 @@ class Activity_Reports {
 		add_action( 'admin_init', array( &$this, 'make_current' ) );
 		add_action( 'admin_head', array( &$this, 'css' ) );
 
-		// Add the super admin page
-		if( version_compare( $wp_version , '3.0.9', '>' ) )
+		// Add the admin page
+		if ( ! is_multisite() )
+			add_action( 'admin_menu', array( &$this, 'admin_page' ) );
+		elseif ( version_compare( $wp_version , '3.0.9', '>' ) )
 			add_action( 'network_admin_menu', array( &$this, 'network_admin_page' ) );
 		else
 			add_action( 'admin_menu', array( &$this, 'pre_3_1_network_admin_page' ) );
@@ -172,6 +174,10 @@ class Activity_Reports {
 		}
 	}
 
+	function admin_page() {
+		add_submenu_page( 'options-general.php', __( 'Reports', 'reports' ), __( 'Reports', 'reports' ), 'manage_options', 'reports', array( &$this, 'page_output' ) );
+	}
+
 	function network_admin_page() {
 		add_submenu_page( 'settings.php', __( 'Reports', 'reports' ), __( 'Reports', 'reports' ), 'manage_network_options', 'reports', array( &$this, 'page_output' ) );
 	}
@@ -210,7 +216,7 @@ class Activity_Reports {
 		$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "reports_comment_activity WHERE comment_ID = '" . $comment_ID . "' AND blog_ID = '" . $wpdb->blogid . "'" );
 	}
 
-	function  comment_activity_remove_blog( $blog_ID ) {
+	function comment_activity_remove_blog( $blog_ID ) {
 		global $wpdb;
 
 		$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "reports_comment_activity WHERE blog_ID = '" . $wpdb->blogid . "'" );
@@ -234,7 +240,7 @@ class Activity_Reports {
 		$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "reports_post_activity WHERE post_ID = '" . $post_ID . "' AND blog_ID = '" . $wpdb->blogid . "'" );
 	}
 
-	function  post_activity_remove_blog( $blog_ID ) {
+	function post_activity_remove_blog( $blog_ID ) {
 		global $wpdb;
 
 		$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "reports_post_activity WHERE blog_ID = '" . $wpdb->blogid . "'" );
