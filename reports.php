@@ -4,7 +4,7 @@ Plugin Name: Reports
 Plugin URI: http://premium.wpmudev.org/project/reports
 Description: Displays post and comment activity per blog and per user
 Author: Andrew Billits, Ulrich Sossou (Incsub)
-Version: 1.0.5
+Version: 1.0.6
 Network: true
 Author URI: http://premium.wpmudev.org/
 WDP ID: 47
@@ -73,8 +73,8 @@ class Activity_Reports {
 			add_action( 'admin_menu', array( &$this, 'pre_3_1_network_admin_page' ) );
 
 		// log user data
-		add_action( 'admin_footer', array( &$this, 'user_activity' ) );
-		add_action( 'wp_footer', array( &$this, 'user_activity' ) );
+		//add_action( 'admin_footer', array( &$this, 'user_activity' ) );
+		//add_action( 'wp_footer', array( &$this, 'user_activity' ) );
 		// log comment data
 		add_action( 'comment_post', array( &$this, 'comment_activity' ) );
 		add_action( 'delete_comment', array( &$this, 'comment_activity_remove' ) );
@@ -194,7 +194,16 @@ class Activity_Reports {
 		global $wpdb, $current_user;
 
 		if ( !empty($current_user->ID) ){
-			$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "reports_user_activity (user_ID, location, date_time) VALUES ( '" . $current_user->ID . "', '" . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] . "', '" . current_time( 'mysql', 1 ) . "' )" );
+			$table = $wpdb->base_prefix . "reports_user_activity";
+			$wpdb->query( 
+				$wpdb->prepare(
+					"INSERT INTO $table (user_ID, location, date_time) 
+					VALUES ( %d, '%s', '%s' )",
+					$current_user->ID,
+					esc_url_raw( $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] ),
+					current_time( 'mysql', 1 )
+				)
+			);
 		}
 	}
 
@@ -203,23 +212,52 @@ class Activity_Reports {
 
 		$comment_details = get_comment($comment_ID);
 		if ( !empty($comment_details->comment_content) ){
-			$comment_activity_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "reports_comment_activity WHERE blog_ID = '" . $wpdb->blogid . "' AND comment_ID = '" . $comment_ID . "'");
+			$table = $wpdb->base_prefix . "reports_comment_activity";
+			$comment_activity_count = $wpdb->get_var( 
+				$wpdb->prepare( 
+					"SELECT COUNT(*) FROM $table WHERE blog_ID = %d AND comment_ID = %d",
+					$wpdb->blogid,
+					$comment_ID
+				)
+			);
 			if ($comment_activity_count == '0') {
-				$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "reports_comment_activity (blog_ID, user_ID, user_email, comment_ID, date_time) VALUES ( '" . $wpdb->blogid . "', '" . $comment_details->user_id . "', '" . $comment_details->comment_author_email . "', '" . $comment_ID . "', '" . current_time( 'mysql', 1 ) . "' )" );
+				$table = $wpdb->base_prefix . "reports_comment_activity";
+				$wpdb->query( 
+					$wpdb->prepare(
+						"INSERT INTO $table (blog_ID, user_ID, user_email, comment_ID, date_time) 
+						VALUES ( %d, %d, '%s', %d, '%s' )",
+						$wpdb->blogid,
+						$comment_details->user_id,
+						$comment_details->comment_author_email,
+						$comment_ID,
+						current_time( 'mysql', 1 )
+					)
+				);
 			}
 		}
 	}
 
 	function comment_activity_remove( $comment_ID ) {
 		global $wpdb;
-
-		$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "reports_comment_activity WHERE comment_ID = '" . $comment_ID . "' AND blog_ID = '" . $wpdb->blogid . "'" );
+		$table = $wpdb->base_prefix . "reports_comment_activity";
+		$wpdb->query( 
+			$wpdb->prepare( 
+				"DELETE FROM $table WHERE comment_ID = %d AND blog_ID = %d",
+				$comment_ID,
+				$wpdb->blogid
+			)
+		);
 	}
 
 	function comment_activity_remove_blog( $blog_ID ) {
 		global $wpdb;
-
-		$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "reports_comment_activity WHERE blog_ID = '" . $wpdb->blogid . "'" );
+		$table = $wpdb->base_prefix . "reports_comment_activity";
+		$wpdb->query( 
+			$wpdb->prepare( 
+				"DELETE FROM $table WHERE blog_ID = %d",
+				$wpdb->blogid
+			)
+		);
 	}
 
 	function post_activity( $post_ID ) {
@@ -227,23 +265,51 @@ class Activity_Reports {
 
 		$post_details = get_post($post_ID);
 		if ( !empty($post_details->post_content) && $post_details->post_type != 'revision' && $post_details->post_status == 'publish' ){
-			$post_activity_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "reports_post_activity WHERE blog_ID = '" . $wpdb->blogid . "' AND post_ID = '" . $post_ID . "'");
-			if ($post_activity_count == '0') {
-				$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "reports_post_activity (blog_ID, user_ID, post_ID, post_type, date_time) VALUES ( '" . $wpdb->blogid . "', '" . $post_details->post_author . "', '" . $post_ID . "', '" . $post_details->post_type . "', '" . current_time( 'mysql', 1 ) . "' )" );
+			$table = $wpdb->base_prefix . "reports_post_activity";
+			$post_activity_count = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM $table  WHERE blog_ID = %d AND post_ID = %d",
+					$wpdb->blogid,
+					$post_ID
+				)
+			);
+			if ($post_activity_count == '0') {		
+				$table = $wpdb->base_prefix . "reports_post_activity";
+				$wpdb->query( 
+					$wpdb->prepare( 
+						"INSERT INTO $table (blog_ID, user_ID, post_ID, post_type, date_time) VALUES ( %d, '%s', %d, '%s', '%s' )",
+						$wpdb->blogid,
+						$post_details->post_author,
+						$post_ID,
+						$post_details->post_type,
+						current_time( 'mysql', 1 )
+					)
+				);
 			}
 		}
 	}
 
 	function post_activity_remove( $post_ID ) {
 		global $wpdb;
-
-		$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "reports_post_activity WHERE post_ID = '" . $post_ID . "' AND blog_ID = '" . $wpdb->blogid . "'" );
+		$table = $wpdb->base_prefix . "reports_post_activity";
+		$wpdb->query( 
+			$wpdb->prepare( 
+				"DELETE FROM $table WHERE post_ID = %d AND blog_ID = %d",
+				$post_ID,
+				$wpdb->blogid
+			)
+		);
 	}
 
 	function post_activity_remove_blog( $blog_ID ) {
 		global $wpdb;
-
-		$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "reports_post_activity WHERE blog_ID = '" . $wpdb->blogid . "'" );
+		$table = $wpdb->base_prefix . "reports_post_activity";
+		$wpdb->query( 
+			$wpdb->prepare( 
+				"DELETE FROM $table WHERE blog_ID = %d",
+				$wpdb->blogid
+			)
+		);
 	}
 
 	function css() {
@@ -363,15 +429,15 @@ class Activity_Reports {
 			echo "<p>Nice Try...</p>";  //If accessed properly, this message doesn't appear.
 			return;
 		}
-		if (isset($_GET['updated'])) {
-			?><div id="message" class="updated fade"><p><?php echo urldecode( $_GET['updatedmsg'] ) ?></p></div><?php
-		}
+
 		echo '<div class="wrap">';
 
 		$action = isset( $_GET[ 'action' ] ) ? $_GET[ 'action' ] : '';
+
 		switch( $action ) {
 			//---------------------------------------------------//
 			default:
+
 				?>
 				<h2><?php _e( 'Reports', 'reports' ) ?></h2>
 				<?php

@@ -35,14 +35,16 @@ function report_user_posts_ouput(){
 					</tr>
 				</table>
 				<p class="submit">
-					<input type="submit" name="Submit" value="<?php _e( 'View', 'reports' ) ?>" />
+					<input type="submit" name="Submit" class="button-primary" value="<?php _e( 'View', 'reports' ) ?>" />
 				</p>
 			</form>
 			<?php
 		break;
 		//---------------------------------------------------//
 		case 'view':
-			$user = get_userdatabylogin( $_POST['user_login'] );
+			$user_login = sanitize_user( $_POST['user_login'] );
+			$period = absint( $_POST['period'] );
+			$user = get_userdatabylogin( $user_login );
 			if ( ! $user ) {
 				?>
                 <p><?php _e( 'User not found.', 'reports' ); ?></p>
@@ -52,19 +54,33 @@ function report_user_posts_ouput(){
 				?>
                 <p>
                     <ul>
-                        <li><strong><?php _e( 'Username', 'reports' ); ?></strong>: <?php echo $_POST['user_login']; ?></li>
-                        <li><strong><?php _e( 'Period', 'reports' ); ?></strong>: <?php printf( __( '%d Days', 'reports' ), $_POST['period'] ); ?></li>
+                        <li><strong><?php _e( 'Username', 'reports' ); ?></strong>: <?php echo $user_login; ?></li>
+                        <li><strong><?php _e( 'Period', 'reports' ); ?></strong>: <?php printf( __( '%d Days', 'reports' ), $period ); ?></li>
                     </ul>
                 </p>
                 <?php
 				//=======================================//
 				$report_data = array();
 				$days = 0;
-				$total_days = $_POST['period'];
-				$total_days_safe = $_POST['period'] + 3;
+				$total_days = $period;
+				$total_days_safe = $period + 3;
 				$date_format = get_option('date_format');
 
-				$query = "SELECT DATE_FORMAT( date_time, '%Y-%m-%d' ) as formatted_date FROM " . $wpdb->base_prefix . "reports_post_activity WHERE user_ID = '" . $user_ID . "' AND post_type = 'post' AND date_time > '" . reports_days_ago($total_days_safe,'Y-m-d') . " 00:00:00'";
+				$table = $wpdb->base_prefix . "reports_post_activity";
+				$date_time = reports_days_ago( $total_days_safe, 'Y-m-d' );
+				$query_date_format = '%Y-%m-%d';
+
+				$query = $wpdb->prepare(
+					"SELECT DATE_FORMAT( date_time, '%s' ) as formatted_date 
+					FROM $table 
+					WHERE user_ID = %d
+					AND post_type = 'post'
+					AND date_time > '%s'",
+					$query_date_format,
+					$user_ID,
+					$date_time . ' 00:00:00'
+				);
+				
 				$report_results = $wpdb->get_results( $query, ARRAY_A );
 				while ( $days <= $total_days ) {
 					$count = 0;

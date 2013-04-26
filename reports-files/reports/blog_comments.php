@@ -35,14 +35,16 @@ function report_blog_comments_ouput(){
 					</tr>
 				</table>
 				<p class="submit">
-					<input type="submit" name="Submit" value="<?php _e( 'View', 'reports' ) ?>" />
+					<input type="submit" name="Submit" class="button-primary" value="<?php _e( 'View', 'reports' ) ?>" />
 				</p>
 			</form>
 			<?php
 		break;
 		//---------------------------------------------------//
 		case 'view':
-			$blog = is_multisite() ? get_blog_details( (int) $_POST['blog_ID'], false ) : true;
+			$blog_id = absint( $_POST['blog_ID'] );
+			$period = absint( $_POST['period'] );
+			$blog = is_multisite() ? get_blog_details( $blog_id, false ) : true;
 			if ( ! $blog ) {
 				?>
                 <p><?php _e( 'Blog not found.', 'reports' ); ?></p>
@@ -52,19 +54,32 @@ function report_blog_comments_ouput(){
 				?>
                 <p>
                     <ul>
-                        <li><strong><?php _e( 'Blog', 'reports' ); ?></strong>: <?php echo $_POST['blog_ID']; ?> (<?php echo get_site_url( $_POST['blog_ID'] ); ?>)</li>
-                        <li><strong><?php _e( 'Period', 'reports' ); ?></strong>: <?php printf( __( '%d Days', 'reports' ), $_POST['period'] ); ?></li>
+                        <li><strong><?php _e( 'Blog', 'reports' ); ?></strong>: <?php echo $blog_id; ?> (<?php echo get_site_url( $blog_id ); ?>)</li>
+                        <li><strong><?php _e( 'Period', 'reports' ); ?></strong>: <?php printf( __( '%d Days', 'reports' ), $period ); ?></li>
                     </ul>
                 </p>
                 <?php
+
 				//=======================================//
 				$report_data = array();
 				$days = 0;
-				$total_days = $_POST['period'];
-				$total_days_safe = $_POST['period'] + 3;
+				$total_days = $period;
+				$total_days_safe = $period + 3;
 				$date_format = get_option('date_format');
 
-				$query = "SELECT DATE_FORMAT( date_time, '%Y-%m-%d' ) as formatted_date FROM " . $wpdb->base_prefix . "reports_comment_activity WHERE blog_ID = " . $_POST['blog_ID'] . " AND date_time > '" . reports_days_ago($total_days_safe,'Y-m-d') . " 00:00:00'";
+				$table = $wpdb->base_prefix . "reports_comment_activity";
+				$date_time = reports_days_ago( $total_days_safe, 'Y-m-d' );
+				$query_date_format = '%Y-%m-%d';
+				$query = $wpdb->prepare(
+					"SELECT DATE_FORMAT( date_time, '%s' ) as formatted_date 
+					FROM $table
+					WHERE blog_ID = %d 
+					AND date_time > '%s'",
+					$query_date_format,
+					$blog_id,
+					$date_time . ' 00:00:00'
+				);
+
 				$report_results = $wpdb->get_results( $query, ARRAY_A );
 				while ( $days <= $total_days ) {
 					$count = 0;
