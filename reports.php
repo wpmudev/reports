@@ -482,7 +482,7 @@ class Activity_Reports {
 					}
 				}
 				?>
-				<h2><a href="?page=reports" style="text-decoration:none;"><?php _e( 'Reports', 'reports' ) ?></a> &raquo; <a href="?page=reports&action=view-report&report=<?php echo $report_nicename; ?>" style="text-decoration:none;"><?php echo $report_name; ?></a></h2>
+				<h2><a href="?page=reports" style="text-decoration:none;"><?php _e( 'Reports', 'reports' ) ?></a> &raquo; <a href="?page=reports&action=view-report&report=<?php echo esc_attr($report_nicename); ?>" style="text-decoration:none;"><?php echo esc_html($report_name); ?></a></h2>
 				<?php
 				do_action('view_report');
 			break;
