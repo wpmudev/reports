@@ -3,8 +3,8 @@
 Plugin Name: Reports
 Plugin URI: http://premium.wpmudev.org/project/reports
 Description: Displays post and comment activity per blog and per user
-Author: Andrew Billits, Ulrich Sossou (Incsub)
-Version: 1.0.6
+Author: Andrew Billits, Ulrich Sossou (Incsub), Ignacio (Incsub)
+Version: 1.0.7
 Network: true
 Author URI: http://premium.wpmudev.org/
 WDP ID: 47
