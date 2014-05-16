@@ -3,7 +3,7 @@
 Plugin Name: Reports
 Plugin URI: http://premium.wpmudev.org/project/reports
 Description: Displays post and comment activity per blog and per user
-Author: Andrew Billits, Ulrich Sossou (Incsub), Ignacio (Incsub)
+Author: WPMU DEV
 Version: 1.0.7
 Network: true
 Author URI: http://premium.wpmudev.org/
@@ -11,7 +11,9 @@ WDP ID: 47
 */
 
 /*
-Copyright 2007-2011 Incsub (http://incsub.com)
+Copyright 2007-2014 Incsub (http://incsub.com)
+Author - YOUR NAME(s)
+Contributors - ADD AS THEY CONTRIBUTE
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License (Version 2 - GPLv2) as published by
@@ -19,12 +21,12 @@ the Free Software Foundation.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
 if( ! defined( 'REPORTS_PLUGIN_DIR' ) )
