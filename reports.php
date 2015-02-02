@@ -4,7 +4,7 @@ Plugin Name: Reports
 Plugin URI: http://premium.wpmudev.org/project/reports
 Description: Displays post and comment activity per blog and per user
 Author: WPMU DEV
-Version: 1.0.7
+Version: 1.0.8
 Network: true
 Author URI: http://premium.wpmudev.org/
 WDP ID: 47
@@ -43,20 +43,13 @@ class Activity_Reports {
 	/**
 	 * Current version of the plugin
 	 **/
-	var $version = '1.0.5';
+	var $version = '1.0.8';
 
 	/**
 	 * Available reports
 	 **/
 	var $available_reports = array();
-
-	/**
-	 * PHP4 constructor
-	 **/
-	function Activity_Reports() {
-		__construct();
-	}
-
+	
 	/**
 	 * PHP5 constructor
 	 **/
@@ -494,7 +487,7 @@ class Activity_Reports {
 	}
 
 }
-$activity_reports =& new Activity_Reports();
+$activity_reports = new Activity_Reports();
 
 /**
  * Format date
