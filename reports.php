@@ -124,14 +124,11 @@ class Activity_Reports {
 				die( __( 'We have problem finding your \'/wp-admin/upgrade-functions.php\' and \'/wp-admin/includes/upgrade.php\'', 'reports' ) );
 
 			$charset_collate = '';
-			if( $wpdb->supports_collation() ) {
-				if( !empty( $wpdb->charset ) ) {
-					$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
-				}
-				if( !empty( $wpdb->collate ) ) {
-					$charset_collate .= " COLLATE $wpdb->collate";
-				}
-			}
+
+			if ( ! empty($wpdb->charset) )
+				$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+			if ( ! empty($wpdb->collate) )
+				$charset_collate .= " COLLATE $wpdb->collate";
 
 			$user_activity_table = "CREATE TABLE `{$wpdb->base_prefix}reports_user_activity` (
 				`active_ID` bigint(20) unsigned NOT NULL auto_increment,

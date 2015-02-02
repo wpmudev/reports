@@ -44,7 +44,7 @@ function report_user_pages_ouput(){
 		case 'view':
 			$user_login = sanitize_user( $_POST['user_login'] );
 			$period = absint( $_POST['period'] );
-			$user = get_userdatabylogin( $user_login );
+			$user = get_user_by( 'login', $user_login );
 			if ( ! $user ) {
 				?>
                 <p><?php _e( 'User not found.', 'reports' ); ?></p>
